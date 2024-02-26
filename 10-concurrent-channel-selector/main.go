@@ -34,11 +34,6 @@ func main() {
 					return
 				}
 				fmt.Println(i)
-				/*
-					case <-time.After(1 * time.Second):
-						fmt.Println("timeout")
-						return
-				*/
 			}
 
 		}
