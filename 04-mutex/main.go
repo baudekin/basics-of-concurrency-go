@@ -2,20 +2,24 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 	"sync"
 )
 
-var wg sync.WaitGroup
+var (
+	wg  sync.WaitGroup
+	mtx sync.Mutex = sync.Mutex{}
+)
 
 func main() {
-	runtime.GOMAXPROCS(3) // Not needed
 
 	// Show I gets get reference by the go routine
-	var i = 10
+	var i int32 = 10
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		mtx.Lock()
+		defer mtx.Unlock()
 		for j := 0; j < 1000; j++ {
 			i = i + 1
 		}
@@ -32,11 +36,12 @@ func main() {
 		fmt.Printf("Inside go routine k: %d\n", k)
 	}(k)
 
-	// Danager Ahead two go routines accessing the same memory location at the same time
-	// semgrp looks for this condition DON'T do this!!!
+	// This is works and is safe
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		defer mtx.Unlock()
+		mtx.Lock()
 		for j := 0; j < 1000; j++ {
 			i = i + 1
 		}

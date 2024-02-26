@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"sync/atomic"
 )
 
 var wg sync.WaitGroup
@@ -12,12 +13,12 @@ func main() {
 	runtime.GOMAXPROCS(3) // Not needed
 
 	// Show I gets get reference by the go routine
-	var i = 10
+	var i int32 = 10
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for j := 0; j < 1000; j++ {
-			i = i + 1
+			atomic.AddInt32(&i, 1)
 		}
 		fmt.Printf("Inside go routine i: %d\n", i)
 	}()
@@ -32,13 +33,12 @@ func main() {
 		fmt.Printf("Inside go routine k: %d\n", k)
 	}(k)
 
-	// Danager Ahead two go routines accessing the same memory location at the same time
-	// semgrp looks for this condition DON'T do this!!!
+	// This is works and is safe
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for j := 0; j < 1000; j++ {
-			i = i + 1
+			atomic.AddInt32(&i, 1)
 		}
 		fmt.Printf("Inside second go routine i: %d\n", i)
 	}()
