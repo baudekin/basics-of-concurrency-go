@@ -149,7 +149,6 @@ func MultiPlexer(in <-chan JsonObj, ctx context.Context, f Chain) <-chan JsonObj
 
 func Publisher(in <-chan JsonObj, ctx context.Context, cancel context.CancelFunc) {
 	go func() {
-		// Shutdown when processing is done
 		for {
 			select {
 			case <-ctx.Done():
@@ -164,6 +163,7 @@ func Publisher(in <-chan JsonObj, ctx context.Context, cancel context.CancelFunc
 					fmt.Printf("%v\n", js)
 				}
 			case <-time.After(8 * time.Second):
+				// Shutdown 8 seconds after the last channel update.
 				cancel()
 			}
 		}
